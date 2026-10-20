@@ -12,6 +12,11 @@
   --muted: #9a9ab0;
   --border: #3e3e58;
 
+  /* декор фона */
+  --decor-1: rgba(106, 176, 255, 0.18);
+  --decor-2: rgba(255, 143, 106, 0.14);
+  --grid-line: rgba(255, 255, 255, 0.03);
+
   --cell-size: min(100px, 26vw);
   --cell-gap: clamp(4px, 1.5vw, 8px);
 }
@@ -29,6 +34,10 @@ body.light {
   --btn-text: #ffffff;
   --muted: #6a6a80;
   --border: #d6d6e0;
+
+  --decor-1: rgba(58, 134, 214, 0.16);
+  --decor-2: rgba(255, 143, 106, 0.14);
+  --grid-line: rgba(0, 0, 0, 0.04);
 }
 
 * {
@@ -53,9 +62,39 @@ body {
   padding-top: max(16px, env(safe-area-inset-top));
   padding-bottom: max(16px, env(safe-area-inset-bottom));
   transition: background 0.2s, color 0.2s;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ---------- Декоративный фон ---------- */
+
+.bg-decor {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(600px 400px at 15% 10%, var(--decor-1), transparent 70%),
+    radial-gradient(500px 400px at 85% 90%, var(--decor-2), transparent 70%);
+  transition: background 0.3s;
+}
+
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at center, black, transparent 85%);
+  -webkit-mask-image: radial-gradient(circle at center, black, transparent 85%);
 }
 
 .app {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 480px;
   display: flex;
@@ -99,8 +138,6 @@ h2 {
   display: none;
 }
 
-/* Имена */
-
 .names {
   display: flex;
   gap: 12px;
@@ -133,8 +170,6 @@ h2 {
   border-color: var(--accent);
 }
 
-/* Счёт серии */
-
 .series-score {
   font-size: clamp(1rem, 3.6vw, 1.15rem);
   padding: 8px 18px;
@@ -154,7 +189,7 @@ h2 {
   text-align: center;
 }
 
-/* Доска */
+/* ---------- Доска ---------- */
 
 .board {
   display: grid;
@@ -174,8 +209,11 @@ h2 {
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.1s;
   animation: pop 0.2s ease-out;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .cell.x {
@@ -188,6 +226,7 @@ h2 {
 
 .cell.win {
   background: var(--win);
+  box-shadow: 0 0 24px var(--win);
 }
 
 @media (hover: hover) {
@@ -206,6 +245,7 @@ h2 {
 
 .cell:active {
   background: var(--panel-hover);
+  transform: scale(0.97);
 }
 
 @keyframes pop {
@@ -219,7 +259,7 @@ h2 {
   }
 }
 
-/* Счёт */
+/* ---------- Счёт и статистика ---------- */
 
 .score {
   display: flex;
@@ -230,13 +270,48 @@ h2 {
   border-radius: 8px;
   flex-wrap: wrap;
   justify-content: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
 
 .score b {
   color: var(--accent);
 }
 
-/* Кнопки */
+.stats {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.stat {
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.stat-label {
+  font-size: clamp(0.75rem, 2.6vw, 0.85rem);
+  color: var(--muted);
+}
+
+.stat-value {
+  font-size: clamp(1rem, 3.6vw, 1.25rem);
+  font-weight: bold;
+  color: var(--accent);
+}
+
+@media (min-width: 420px) {
+  .stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ---------- Кнопки ---------- */
 
 .buttons {
   display: flex;
@@ -278,7 +353,7 @@ button.small {
   font-size: 0.85rem;
 }
 
-/* История */
+/* ---------- История ---------- */
 
 .history-section {
   width: 100%;
@@ -288,6 +363,7 @@ button.small {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 }
 
 .history-header {
@@ -297,13 +373,44 @@ button.small {
   gap: 8px;
 }
 
+.history-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+
+.history-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.history-filter select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel-hover);
+  color: var(--text);
+  font-size: 0.9rem;
+  min-height: 36px;
+}
+
+.history-counter {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 .history-list {
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 6px;
   font-size: clamp(0.85rem, 3vw, 0.95rem);
-  max-height: 220px;
+  max-height: 260px;
   overflow-y: auto;
 }
 
@@ -343,6 +450,6 @@ button.small {
   }
 
   .history-list {
-    max-height: 180px;
+    max-height: 200px;
   }
 }
