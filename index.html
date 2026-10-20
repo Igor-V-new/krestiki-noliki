@@ -2,77 +2,82 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1e1e2e">
   <title>Крестики-нолики</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Крестики-нолики</h1>
+  <main class="app">
+    <h1>Крестики-нолики</h1>
 
-  <div class="mode-select">
-    <label>
-      <input type="radio" name="mode" value="pvp" checked>
-      Два игрока
-    </label>
-    <label>
-      <input type="radio" name="mode" value="pve">
-      Против бота
-    </label>
-  </div>
+    <div class="mode-select">
+      <label>
+        <input type="radio" name="mode" value="pvp" checked>
+        Два игрока
+      </label>
+      <label>
+        <input type="radio" name="mode" value="pve">
+        Против бота
+      </label>
+    </div>
 
-  <div class="difficulty-select hidden" id="difficulty-select">
-    <label>
-      <input type="radio" name="difficulty" value="easy">
-      Лёгкий
-    </label>
-    <label>
-      <input type="radio" name="difficulty" value="medium">
-      Средний
-    </label>
-    <label>
-      <input type="radio" name="difficulty" value="hard" checked>
-      Сложный
-    </label>
-  </div>
+    <div class="difficulty-select hidden" id="difficulty-select">
+      <label>
+        <input type="radio" name="difficulty" value="easy">
+        Лёгкий
+      </label>
+      <label>
+        <input type="radio" name="difficulty" value="medium">
+        Средний
+      </label>
+      <label>
+        <input type="radio" name="difficulty" value="hard" checked>
+        Сложный
+      </label>
+    </div>
 
-  <div class="first-select hidden" id="first-select">
-    <label>
-      <input type="radio" name="first" value="human" checked>
-      Я начинаю
-    </label>
-    <label>
-      <input type="radio" name="first" value="bot">
-      Бот начинает
-    </label>
-  </div>
+    <div class="first-select hidden" id="first-select">
+      <label>
+        <input type="radio" name="first" value="human" checked>
+        Я начинаю
+      </label>
+      <label>
+        <input type="radio" name="first" value="bot">
+        Бот начинает
+      </label>
+    </div>
 
-  <p id="status">Ход: X</p>
+    <p id="status">Ход: X</p>
 
-  <div class="board" id="board">
-    <div class="cell" data-index="0"></div>
-    <div class="cell" data-index="1"></div>
-    <div class="cell" data-index="2"></div>
-    <div class="cell" data-index="3"></div>
-    <div class="cell" data-index="4"></div>
-    <div class="cell" data-index="5"></div>
-    <div class="cell" data-index="6"></div>
-    <div class="cell" data-index="7"></div>
-    <div class="cell" data-index="8"></div>
-  </div>
+    <div class="board" id="board">
+      <div class="cell" data-index="0"></div>
+      <div class="cell" data-index="1"></div>
+      <div class="cell" data-index="2"></div>
+      <div class="cell" data-index="3"></div>
+      <div class="cell" data-index="4"></div>
+      <div class="cell" data-index="5"></div>
+      <div class="cell" data-index="6"></div>
+      <div class="cell" data-index="7"></div>
+      <div class="cell" data-index="8"></div>
+    </div>
 
-  <div class="score">
-    <span>X: <b id="score-x">0</b></span>
-    <span>O: <b id="score-o">0</b></span>
-    <span>Ничьи: <b id="score-draw">0</b></span>
-  </div>
+    <div class="score">
+      <span>X: <b id="score-x">0</b></span>
+      <span>O: <b id="score-o">0</b></span>
+      <span>Ничьи: <b id="score-draw">0</b></span>
+    </div>
 
-  <div class="buttons">
-    <button id="restart">Начать заново</button>
-    <button id="reset-score" class="secondary">Сбросить счёт</button>
-  </div>
+    <div class="buttons">
+      <button id="restart">Начать заново</button>
+      <button id="reset-score" class="secondary">Сбросить счёт</button>
+    </div>
 
-  <button id="sound-toggle" class="secondary">🔊 Звук: вкл</button>
-  <button id="theme-toggle" class="secondary">🌙 Тема: тёмная</button>
+    <div class="buttons">
+      <button id="sound-toggle" class="secondary">🔊 Звук: вкл</button>
+      <button id="theme-toggle" class="secondary">🌙 Тема: тёмная</button>
+    </div>
+  </main>
 
   <script src="script.js"></script>
 </body>
