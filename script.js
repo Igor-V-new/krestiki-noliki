@@ -54,10 +54,52 @@ let score = { x: 0, o: 0, draw: 0 };
 let soundOn = true;
 let theme = 'dark';
 let names = { x: DEFAULT_NAMES.x, o: DEFAULT_NAMES.o };
-let history = []; // [{ winner: 'X'|'O'|'draw', mode, seriesMode, date, durationMs }]
+let history = [];
 
 let roundTimer = null;
 let roundStartTime = Date.now();
+
+// ---------- Склонения ----------
+
+// Известные женские имена (для точного определения рода)
+const FEMALE_NAMES = new Set([
+  'аня', 'анна', 'маша', 'мария', 'оля', 'ольга', 'катя', 'екатерина',
+  'наташа', 'наталья', 'наталия', 'ира', 'ирина', 'лена', 'елена',
+  'света', 'светлана', 'таня', 'татьяна', 'юля', 'юлия', 'вера',
+  'надя', 'надежда', 'люба', 'любовь', 'даша', 'дарья', 'соня',
+  'софья', 'софия', 'лиза', 'елизавета', 'полина', 'алиса', 'ксюша',
+  'ксения', 'вика', 'виктория', 'мила', 'милана', 'варя', 'варвара',
+  'ангелина', 'кристина', 'дина', 'зара', 'лариса', 'нина', 'рая',
+  'раиса', 'рита', 'маргарита', 'эля', 'элина', 'эмма', 'яна'
+]);
+
+// Мужские имена, оканчивающиеся на -а/-я (исключения из эвристики)
+const MALE_EXCEPTIONS = new Set([
+  'никита', 'илья', 'кузьма', 'фома', 'лука', 'савва', 'данила',
+  'гаврила', 'михайла', 'саша' // Саша — унисекс, по умолчанию мужской
+]);
+
+function detectGender(name) {
+  if (!name) return 'male';
+  if (name === BOT_NAME) return 'male';
+
+  const lower = name.trim().toLowerCase();
+  const firstWord = lower.split(/\s+/)[0];
+
+  if (FEMALE_NAMES.has(firstWord)) return 'female';
+  if (MALE_EXCEPTIONS.has(firstWord)) return 'male';
+
+  if (/(а|я)$/.test(firstWord)) return 'female';
+  return 'male';
+}
+
+function wonVerb(name) {
+  return detectGender(name) === 'female' ? 'победила' : 'победил';
+}
+
+function wonPhrase(name) {
+  return `${name} ${wonVerb(name)}`;
+}
 
 // ---------- Имена ----------
 
@@ -241,9 +283,9 @@ function renderSeries() {
 
 function addHistory(winner, durationMs) {
   const entry = {
-    winner,                    // 'X' | 'O' | 'draw'
-    mode,                      // 'pvp' | 'pve'
-    seriesMode,                // 'single' | 'bo3'
+    winner,
+    mode,
+    seriesMode,
     date: new Date().toISOString(),
     durationMs
   };
@@ -272,13 +314,12 @@ function renderHistory() {
     if (entry.winner === 'draw') {
       result.textContent = 'Ничья';
     } else {
-      // В истории имя берём из сохранённого названия по символу с учётом режима
       const winnerName = entry.winner === 'O' && entry.mode === 'pve'
         ? BOT_NAME
         : entry.winner === 'X'
           ? (names.x || DEFAULT_NAMES.x)
           : (names.o || DEFAULT_NAMES.o);
-      result.textContent = `Победил ${winnerName}`;
+      result.textContent = wonPhrase(winnerName);
     }
 
     const meta = document.createElement('div');
@@ -328,7 +369,8 @@ function makeMove(index) {
   if (checkWin(currentPlayer)) {
     const durationMs = Date.now() - roundStartTime;
     const winnerName = nameOf(currentPlayer);
-    statusEl.textContent = `Победил ${winnerName}! 🎉`;
+    const phrase = wonPhrase(winnerName);
+    statusEl.textContent = `${phrase}! 🎉`;
     gameOver = true;
     highlightWin(currentPlayer);
     addScore(currentPlayer);
@@ -342,7 +384,7 @@ function makeMove(index) {
 
       if (seriesScore[currentPlayer === 'X' ? 'x' : 'o'] >= WIN_TARGET) {
         seriesOver = true;
-        statusEl.textContent = `🏆 ${winnerName} выиграл серию ${WIN_TARGET}:${WIN_TARGET - 1}!`;
+        statusEl.textContent = `🏆 ${phrase} серию ${WIN_TARGET}:${WIN_TARGET - 1}!`;
         setTimeout(() => {
           seriesScore = { x: 0, o: 0 };
           seriesOver = false;
