@@ -5,9 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1e1e2e">
   <title>Крестики-нолики</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="bg-decor" aria-hidden="true"></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+
   <main class="app">
     <h1>Крестики-нолики</h1>
 
@@ -94,6 +98,33 @@
       <span>Ничьи: <b id="score-draw">0</b></span>
     </div>
 
+    <div class="stats" id="stats">
+      <div class="stat">
+        <div class="stat-label">Всего партий</div>
+        <div class="stat-value" id="stat-total">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Побед X</div>
+        <div class="stat-value" id="stat-x">0%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Побед O</div>
+        <div class="stat-value" id="stat-o">0%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Ничьих</div>
+        <div class="stat-value" id="stat-draw">0%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Средняя партия</div>
+        <div class="stat-value" id="stat-avg">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Быстрейшая победа</div>
+        <div class="stat-value" id="stat-fastest">—</div>
+      </div>
+    </div>
+
     <div class="buttons">
       <button id="restart">Начать заново</button>
       <button id="reset-score" class="secondary">Сбросить счёт</button>
@@ -109,9 +140,25 @@
         <h2>История партий</h2>
         <button id="clear-history" class="secondary small">Очистить</button>
       </div>
+
+      <div class="history-controls">
+        <label class="history-filter">
+          <span>Фильтр:</span>
+          <select id="history-filter">
+            <option value="all">Все</option>
+            <option value="pvp">Два игрока</option>
+            <option value="pve">Против бота</option>
+            <option value="bo3">Серии</option>
+          </select>
+        </label>
+        <span id="history-counter" class="history-counter">0 из 0</span>
+      </div>
+
       <ul id="history-list" class="history-list">
         <li class="history-empty">Пока нет сыгранных партий</li>
       </ul>
+
+      <button id="history-more" class="secondary small hidden">Показать ещё</button>
     </section>
   </main>
 
