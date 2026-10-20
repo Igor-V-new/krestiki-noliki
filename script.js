@@ -6,6 +6,13 @@ const resetScoreBtn = document.getElementById('reset-score');
 const soundToggleBtn = document.getElementById('sound-toggle');
 const themeToggleBtn = document.getElementById('theme-toggle');
 const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+const nameXInput = document.getElementById('name-x');
+const nameOInput = document.getElementById('name-o');
+const nameOField = document.getElementById('name-o-field');
+const scoreXNameEl = document.getElementById('score-x-name');
+const scoreONameEl = document.getElementById('score-o-name');
+const historyListEl = document.getElementById('history-list');
+const clearHistoryBtn = document.getElementById('clear-history');
 const modeRadios = document.querySelectorAll('input[name="mode"]');
 const difficultyRadios = document.querySelectorAll('input[name="difficulty"]');
 const firstRadios = document.querySelectorAll('input[name="first"]');
@@ -22,6 +29,10 @@ const scoreDrawEl = document.getElementById('score-draw');
 const HUMAN = 'X';
 const BOT = 'O';
 const WIN_TARGET = 3;
+const HISTORY_LIMIT = 10;
+
+const DEFAULT_NAMES = { x: 'Игрок X', o: 'Игрок O' };
+const BOT_NAME = 'Бот';
 
 const winLines = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -35,15 +46,46 @@ let gameOver = false;
 let mode = 'pvp';
 let difficulty = 'hard';
 let firstPlayer = 'human';
-let seriesMode = 'single';   // 'single' | 'bo3'
+let seriesMode = 'single';
 let seriesScore = { x: 0, o: 0 };
 let seriesOver = false;
 
 let score = { x: 0, o: 0, draw: 0 };
 let soundOn = true;
 let theme = 'dark';
+let names = { x: DEFAULT_NAMES.x, o: DEFAULT_NAMES.o };
+let history = []; // [{ winner: 'X'|'O'|'draw', mode, seriesMode, date, durationMs }]
 
-let roundTimer = null; // таймер автоперехода между матчами серии
+let roundTimer = null;
+let roundStartTime = Date.now();
+
+// ---------- Имена ----------
+
+function nameOf(symbol) {
+  if (symbol === 'X') return names.x || DEFAULT_NAMES.x;
+  if (symbol === 'O') {
+    return mode === 'pve' ? BOT_NAME : (names.o || DEFAULT_NAMES.o);
+  }
+  return symbol;
+}
+
+function updateNamesUI() {
+  scoreXNameEl.textContent = nameOf('X');
+  scoreONameEl.textContent = nameOf('O');
+
+  if (mode === 'pve') {
+    nameOField.classList.add('hidden');
+  } else {
+    nameOField.classList.remove('hidden');
+  }
+}
+
+function saveNames() {
+  names.x = nameXInput.value.trim() || DEFAULT_NAMES.x;
+  names.o = nameOInput.value.trim() || DEFAULT_NAMES.o;
+  saveState();
+  updateNamesUI();
+}
 
 // ---------- Звуки ----------
 
@@ -150,6 +192,22 @@ function loadState() {
         seriesScore = parsedSS;
       }
     }
+
+    const nRaw = localStorage.getItem('ttt-names');
+    if (nRaw) {
+      const parsedN = JSON.parse(nRaw);
+      if (parsedN && typeof parsedN.x === 'string' && typeof parsedN.o === 'string') {
+        names = parsedN;
+      }
+    }
+
+    const hRaw = localStorage.getItem('ttt-history');
+    if (hRaw) {
+      const parsedH = JSON.parse(hRaw);
+      if (Array.isArray(parsedH)) {
+        history = parsedH.slice(0, HISTORY_LIMIT);
+      }
+    }
   } catch (e) {
     console.warn('Не удалось загрузить данные:', e);
   }
@@ -161,6 +219,8 @@ function saveState() {
     localStorage.setItem('ttt-sound', soundOn ? 'on' : 'off');
     localStorage.setItem('ttt-theme', theme);
     localStorage.setItem('ttt-series-score', JSON.stringify(seriesScore));
+    localStorage.setItem('ttt-names', JSON.stringify(names));
+    localStorage.setItem('ttt-history', JSON.stringify(history));
   } catch (e) {
     console.warn('Не удалось сохранить данные:', e);
   }
@@ -175,6 +235,69 @@ function renderScore() {
 function renderSeries() {
   seriesXEl.textContent = seriesScore.x;
   seriesOEl.textContent = seriesScore.o;
+}
+
+// ---------- История ----------
+
+function addHistory(winner, durationMs) {
+  const entry = {
+    winner,                    // 'X' | 'O' | 'draw'
+    mode,                      // 'pvp' | 'pve'
+    seriesMode,                // 'single' | 'bo3'
+    date: new Date().toISOString(),
+    durationMs
+  };
+  history.unshift(entry);
+  if (history.length > HISTORY_LIMIT) history.length = HISTORY_LIMIT;
+  saveState();
+  renderHistory();
+}
+
+function renderHistory() {
+  historyListEl.innerHTML = '';
+
+  if (history.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'history-empty';
+    li.textContent = 'Пока нет сыгранных партий';
+    historyListEl.appendChild(li);
+    return;
+  }
+
+  history.forEach(entry => {
+    const li = document.createElement('li');
+
+    const result = document.createElement('div');
+    result.className = 'history-result';
+    if (entry.winner === 'draw') {
+      result.textContent = 'Ничья';
+    } else {
+      // В истории имя берём из сохранённого названия по символу с учётом режима
+      const winnerName = entry.winner === 'O' && entry.mode === 'pve'
+        ? BOT_NAME
+        : entry.winner === 'X'
+          ? (names.x || DEFAULT_NAMES.x)
+          : (names.o || DEFAULT_NAMES.o);
+      result.textContent = `Победил ${winnerName}`;
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'history-meta';
+    const modeLabel = entry.mode === 'pve'
+      ? `Против бота (${entry.winner === 'O' ? 'бот' : 'ты'})`
+      : 'Два игрока';
+    const seriesLabel = entry.seriesMode === 'bo3' ? ' · серия' : '';
+    const date = new Date(entry.date);
+    const timeStr = date.toLocaleString('ru-RU', {
+      day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+    });
+    const seconds = Math.max(1, Math.round(entry.durationMs / 1000));
+    meta.textContent = `${modeLabel}${seriesLabel} · ${timeStr} · ${seconds}с`;
+
+    li.appendChild(result);
+    li.appendChild(meta);
+    historyListEl.appendChild(li);
+  });
 }
 
 // ---------- Игровой процесс ----------
@@ -203,10 +326,13 @@ function makeMove(index) {
   playMove();
 
   if (checkWin(currentPlayer)) {
-    statusEl.textContent = `Победил ${currentPlayer}! 🎉`;
+    const durationMs = Date.now() - roundStartTime;
+    const winnerName = nameOf(currentPlayer);
+    statusEl.textContent = `Победил ${winnerName}! 🎉`;
     gameOver = true;
     highlightWin(currentPlayer);
     addScore(currentPlayer);
+    addHistory(currentPlayer, durationMs);
     playWin();
 
     if (seriesMode === 'bo3') {
@@ -216,7 +342,7 @@ function makeMove(index) {
 
       if (seriesScore[currentPlayer === 'X' ? 'x' : 'o'] >= WIN_TARGET) {
         seriesOver = true;
-        statusEl.textContent = `🏆 ${currentPlayer} выиграл серию ${WIN_TARGET}:${WIN_TARGET - 1}!`;
+        statusEl.textContent = `🏆 ${winnerName} выиграл серию ${WIN_TARGET}:${WIN_TARGET - 1}!`;
         setTimeout(() => {
           seriesScore = { x: 0, o: 0 };
           seriesOver = false;
@@ -227,15 +353,17 @@ function makeMove(index) {
         return;
       }
 
-      scheduleRoundRestart(`Матч за ${currentPlayer}. Следующий через мгновение...`);
+      scheduleRoundRestart(`Матч за ${winnerName}. Следующий через мгновение...`);
     }
     return;
   }
 
   if (state.every(v => v !== '')) {
+    const durationMs = Date.now() - roundStartTime;
     statusEl.textContent = 'Ничья 🤝';
     gameOver = true;
     addScore('draw');
+    addHistory('draw', durationMs);
     playDraw();
 
     if (seriesMode === 'bo3') {
@@ -267,10 +395,10 @@ function addScore(winner) {
 function updateStatus() {
   if (mode === 'pve') {
     statusEl.textContent = currentPlayer === HUMAN
-      ? 'Твой ход (X)'
-      : 'Бот думает...';
+      ? `Твой ход (${nameOf(HUMAN)})`
+      : `${BOT_NAME} думает...`;
   } else {
-    statusEl.textContent = `Ход: ${currentPlayer}`;
+    statusEl.textContent = `Ход: ${nameOf(currentPlayer)}`;
   }
 }
 
@@ -373,6 +501,7 @@ function restart() {
 
   state = Array(9).fill('');
   gameOver = false;
+  roundStartTime = Date.now();
   cells.forEach(c => {
     c.textContent = '';
     c.classList.remove('x', 'o', 'win');
@@ -405,6 +534,8 @@ function updateVisibility() {
   } else {
     seriesScoreBox.classList.add('hidden');
   }
+
+  updateNamesUI();
 }
 
 // ---------- Слушатели ----------
@@ -443,6 +574,9 @@ seriesRadios.forEach(radio => {
   });
 });
 
+nameXInput.addEventListener('input', saveNames);
+nameOInput.addEventListener('input', saveNames);
+
 soundToggleBtn.addEventListener('click', () => {
   soundOn = !soundOn;
   updateSoundButton();
@@ -468,11 +602,20 @@ resetScoreBtn.addEventListener('click', () => {
   renderSeries();
 });
 
+clearHistoryBtn.addEventListener('click', () => {
+  history = [];
+  saveState();
+  renderHistory();
+});
+
 // ---------- Инициализация ----------
 
 loadState();
+nameXInput.value = names.x;
+nameOInput.value = names.o;
 renderScore();
 renderSeries();
+renderHistory();
 updateSoundButton();
 applyTheme();
 updateVisibility();
