@@ -9,14 +9,19 @@ const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 const modeRadios = document.querySelectorAll('input[name="mode"]');
 const difficultyRadios = document.querySelectorAll('input[name="difficulty"]');
 const firstRadios = document.querySelectorAll('input[name="first"]');
+const seriesRadios = document.querySelectorAll('input[name="series"]');
 const difficultySelect = document.getElementById('difficulty-select');
 const firstSelect = document.getElementById('first-select');
+const seriesScoreBox = document.getElementById('series-score');
+const seriesXEl = document.getElementById('series-x');
+const seriesOEl = document.getElementById('series-o');
 const scoreXEl = document.getElementById('score-x');
 const scoreOEl = document.getElementById('score-o');
 const scoreDrawEl = document.getElementById('score-draw');
 
 const HUMAN = 'X';
 const BOT = 'O';
+const WIN_TARGET = 3;
 
 const winLines = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -30,10 +35,15 @@ let gameOver = false;
 let mode = 'pvp';
 let difficulty = 'hard';
 let firstPlayer = 'human';
+let seriesMode = 'single';   // 'single' | 'bo3'
+let seriesScore = { x: 0, o: 0 };
+let seriesOver = false;
 
 let score = { x: 0, o: 0, draw: 0 };
 let soundOn = true;
 let theme = 'dark';
+
+let roundTimer = null; // таймер автоперехода между матчами серии
 
 // ---------- Звуки ----------
 
@@ -129,6 +139,17 @@ function loadState() {
 
     const tRaw = localStorage.getItem('ttt-theme');
     if (tRaw === 'light' || tRaw === 'dark') theme = tRaw;
+
+    const ssRaw = localStorage.getItem('ttt-series-score');
+    if (ssRaw) {
+      const parsedSS = JSON.parse(ssRaw);
+      if (
+        typeof parsedSS.x === 'number' &&
+        typeof parsedSS.o === 'number'
+      ) {
+        seriesScore = parsedSS;
+      }
+    }
   } catch (e) {
     console.warn('Не удалось загрузить данные:', e);
   }
@@ -139,6 +160,7 @@ function saveState() {
     localStorage.setItem('ttt-score', JSON.stringify(score));
     localStorage.setItem('ttt-sound', soundOn ? 'on' : 'off');
     localStorage.setItem('ttt-theme', theme);
+    localStorage.setItem('ttt-series-score', JSON.stringify(seriesScore));
   } catch (e) {
     console.warn('Не удалось сохранить данные:', e);
   }
@@ -150,6 +172,11 @@ function renderScore() {
   scoreDrawEl.textContent = score.draw;
 }
 
+function renderSeries() {
+  seriesXEl.textContent = seriesScore.x;
+  seriesOEl.textContent = seriesScore.o;
+}
+
 // ---------- Игровой процесс ----------
 
 function handleClick(e) {
@@ -157,7 +184,7 @@ function handleClick(e) {
   if (!cell.classList.contains('cell')) return;
   const index = Number(cell.dataset.index);
 
-  if (gameOver || state[index] !== '') return;
+  if (gameOver || seriesOver || state[index] !== '') return;
   if (mode === 'pve' && currentPlayer !== HUMAN) return;
 
   makeMove(index);
@@ -181,6 +208,27 @@ function makeMove(index) {
     highlightWin(currentPlayer);
     addScore(currentPlayer);
     playWin();
+
+    if (seriesMode === 'bo3') {
+      seriesScore[currentPlayer === 'X' ? 'x' : 'o']++;
+      renderSeries();
+      saveState();
+
+      if (seriesScore[currentPlayer === 'X' ? 'x' : 'o'] >= WIN_TARGET) {
+        seriesOver = true;
+        statusEl.textContent = `🏆 ${currentPlayer} выиграл серию ${WIN_TARGET}:${WIN_TARGET - 1}!`;
+        setTimeout(() => {
+          seriesScore = { x: 0, o: 0 };
+          seriesOver = false;
+          renderSeries();
+          saveState();
+          restart();
+        }, 2500);
+        return;
+      }
+
+      scheduleRoundRestart(`Матч за ${currentPlayer}. Следующий через мгновение...`);
+    }
     return;
   }
 
@@ -189,11 +237,23 @@ function makeMove(index) {
     gameOver = true;
     addScore('draw');
     playDraw();
+
+    if (seriesMode === 'bo3') {
+      scheduleRoundRestart('Ничья. Следующий матч через мгновение...');
+    }
     return;
   }
 
   currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
   updateStatus();
+}
+
+function scheduleRoundRestart(text) {
+  statusEl.textContent = text;
+  clearTimeout(roundTimer);
+  roundTimer = setTimeout(() => {
+    restart();
+  }, 1500);
 }
 
 function addScore(winner) {
@@ -231,7 +291,7 @@ function highlightWin(player) {
 // ---------- Бот ----------
 
 function botMove() {
-  if (gameOver) return;
+  if (gameOver || seriesOver) return;
   let move;
 
   if (difficulty === 'easy') {
@@ -308,6 +368,9 @@ function checkWinOnBoard(board, player) {
 // ---------- Рестарт и настройки ----------
 
 function restart() {
+  clearTimeout(roundTimer);
+  roundTimer = null;
+
   state = Array(9).fill('');
   gameOver = false;
   cells.forEach(c => {
@@ -336,6 +399,12 @@ function updateVisibility() {
     difficultySelect.classList.add('hidden');
     firstSelect.classList.add('hidden');
   }
+
+  if (seriesMode === 'bo3') {
+    seriesScoreBox.classList.remove('hidden');
+  } else {
+    seriesScoreBox.classList.add('hidden');
+  }
 }
 
 // ---------- Слушатели ----------
@@ -362,6 +431,18 @@ firstRadios.forEach(radio => {
   });
 });
 
+seriesRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    seriesMode = radio.value;
+    seriesScore = { x: 0, o: 0 };
+    seriesOver = false;
+    renderSeries();
+    saveState();
+    updateVisibility();
+    restart();
+  });
+});
+
 soundToggleBtn.addEventListener('click', () => {
   soundOn = !soundOn;
   updateSoundButton();
@@ -380,14 +461,18 @@ restartBtn.addEventListener('click', restart);
 
 resetScoreBtn.addEventListener('click', () => {
   score = { x: 0, o: 0, draw: 0 };
+  seriesScore = { x: 0, o: 0 };
+  seriesOver = false;
   saveState();
   renderScore();
+  renderSeries();
 });
 
 // ---------- Инициализация ----------
 
 loadState();
 renderScore();
+renderSeries();
 updateSoundButton();
 applyTheme();
 updateVisibility();
