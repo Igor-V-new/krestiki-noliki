@@ -20,7 +20,7 @@
     </label>
   </div>
 
-  <div class="difficulty-select" id="difficulty-select">
+  <div class="difficulty-select hidden" id="difficulty-select">
     <label>
       <input type="radio" name="difficulty" value="easy">
       Лёгкий
@@ -32,6 +32,17 @@
     <label>
       <input type="radio" name="difficulty" value="hard" checked>
       Сложный
+    </label>
+  </div>
+
+  <div class="first-select hidden" id="first-select">
+    <label>
+      <input type="radio" name="first" value="human" checked>
+      Я начинаю
+    </label>
+    <label>
+      <input type="radio" name="first" value="bot">
+      Бот начинает
     </label>
   </div>
 
@@ -49,7 +60,16 @@
     <div class="cell" data-index="8"></div>
   </div>
 
-  <button id="restart">Начать заново</button>
+  <div class="score">
+    <span>X: <b id="score-x">0</b></span>
+    <span>O: <b id="score-o">0</b></span>
+    <span>Ничьи: <b id="score-draw">0</b></span>
+  </div>
+
+  <div class="buttons">
+    <button id="restart">Начать заново</button>
+    <button id="reset-score" class="secondary">Сбросить счёт</button>
+  </div>
 
   <script src="script.js"></script>
 </body>
