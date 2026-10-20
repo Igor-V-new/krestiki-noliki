@@ -48,6 +48,21 @@
       </label>
     </div>
 
+    <div class="series-select">
+      <label>
+        <input type="radio" name="series" value="single" checked>
+        Обычная игра
+      </label>
+      <label>
+        <input type="radio" name="series" value="bo3">
+        До 3 побед
+      </label>
+    </div>
+
+    <div class="series-score hidden" id="series-score">
+      Серия: <b id="series-x">0</b> : <b id="series-o">0</b> (до 3)
+    </div>
+
     <p id="status">Ход: X</p>
 
     <div class="board" id="board">
