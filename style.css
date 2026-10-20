@@ -9,6 +9,8 @@
   --status: #a0e0a0;
   --win: #4a7a4a;
   --btn-text: #1e1e2e;
+  --muted: #9a9ab0;
+  --border: #3e3e58;
 
   --cell-size: min(100px, 26vw);
   --cell-gap: clamp(4px, 1.5vw, 8px);
@@ -25,6 +27,8 @@ body.light {
   --status: #2e7d32;
   --win: #a5d6a5;
   --btn-text: #ffffff;
+  --muted: #6a6a80;
+  --border: #d6d6e0;
 }
 
 * {
@@ -43,7 +47,7 @@ body {
   background: var(--bg);
   color: var(--text);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 16px;
   padding-top: max(16px, env(safe-area-inset-top));
@@ -63,6 +67,10 @@ body {
 h1 {
   font-size: clamp(1.4rem, 5vw, 2rem);
   text-align: center;
+}
+
+h2 {
+  font-size: clamp(1rem, 3.6vw, 1.15rem);
 }
 
 .mode-select,
@@ -91,6 +99,42 @@ h1 {
   display: none;
 }
 
+/* Имена */
+
+.names {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.name-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: clamp(0.85rem, 3vw, 0.95rem);
+  color: var(--muted);
+  flex: 1 1 160px;
+}
+
+.name-field input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 1rem;
+  min-height: 40px;
+}
+
+.name-field input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Счёт серии */
+
 .series-score {
   font-size: clamp(1rem, 3.6vw, 1.15rem);
   padding: 8px 18px;
@@ -109,6 +153,8 @@ h1 {
   min-height: 1.5em;
   text-align: center;
 }
+
+/* Доска */
 
 .board {
   display: grid;
@@ -173,6 +219,8 @@ h1 {
   }
 }
 
+/* Счёт */
+
 .score {
   display: flex;
   gap: clamp(12px, 4vw, 24px);
@@ -187,6 +235,8 @@ h1 {
 .score b {
   color: var(--accent);
 }
+
+/* Кнопки */
 
 .buttons {
   display: flex;
@@ -220,6 +270,68 @@ button.off {
   opacity: 0.6;
 }
 
+button.small {
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 32px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+}
+
+/* История */
+
+.history-section {
+  width: 100%;
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.history-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: clamp(0.85rem, 3vw, 0.95rem);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.history-list li {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--panel-hover);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-list li .history-result {
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.history-list li .history-meta {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.history-empty {
+  color: var(--muted);
+  text-align: center;
+  background: transparent !important;
+}
+
 @media (max-width: 360px) {
   :root {
     --cell-size: 26vw;
@@ -228,5 +340,9 @@ button.off {
   button {
     min-width: 120px;
     padding: 10px 14px;
+  }
+
+  .history-list {
+    max-height: 180px;
   }
 }
