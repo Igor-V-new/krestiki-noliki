@@ -5,6 +5,7 @@ const restartBtn = document.getElementById('restart');
 const resetScoreBtn = document.getElementById('reset-score');
 const soundToggleBtn = document.getElementById('sound-toggle');
 const themeToggleBtn = document.getElementById('theme-toggle');
+const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 const modeRadios = document.querySelectorAll('input[name="mode"]');
 const difficultyRadios = document.querySelectorAll('input[name="difficulty"]');
 const firstRadios = document.querySelectorAll('input[name="first"]');
@@ -32,7 +33,7 @@ let firstPlayer = 'human';
 
 let score = { x: 0, o: 0, draw: 0 };
 let soundOn = true;
-let theme = 'dark'; // 'dark' | 'light'
+let theme = 'dark';
 
 // ---------- Звуки ----------
 
@@ -99,6 +100,13 @@ function applyTheme() {
   themeToggleBtn.textContent = theme === 'dark'
     ? '🌙 Тема: тёмная'
     : '☀️ Тема: светлая';
+
+  if (themeColorMeta) {
+    themeColorMeta.setAttribute(
+      'content',
+      theme === 'dark' ? '#1e1e2e' : '#f4f4f8'
+    );
+  }
 }
 
 // ---------- localStorage ----------
