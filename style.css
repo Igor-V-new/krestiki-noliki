@@ -1,3 +1,29 @@
+:root {
+  --bg: #1e1e2e;
+  --text: #eee;
+  --panel: #2e2e42;
+  --panel-hover: #3e3e58;
+  --panel-active: #4e4e6c;
+  --accent: #6ab0ff;
+  --accent-hover: #8cc4ff;
+  --status: #a0e0a0;
+  --win: #4a7a4a;
+  --btn-text: #1e1e2e;
+}
+
+body.light {
+  --bg: #f4f4f8;
+  --text: #1e1e2e;
+  --panel: #ffffff;
+  --panel-hover: #e6e6f0;
+  --panel-active: #d6d6e0;
+  --accent: #3a86d6;
+  --accent-hover: #5599e0;
+  --status: #2e7d32;
+  --win: #a5d6a5;
+  --btn-text: #ffffff;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,8 +32,8 @@
 
 body {
   font-family: system-ui, sans-serif;
-  background: #1e1e2e;
-  color: #eee;
+  background: var(--bg);
+  color: var(--text);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -15,6 +41,7 @@ body {
   min-height: 100vh;
   gap: 14px;
   padding: 24px;
+  transition: background 0.2s, color 0.2s;
 }
 
 h1 {
@@ -46,7 +73,7 @@ h1 {
 
 #status {
   font-size: 1.2rem;
-  color: #a0e0a0;
+  color: var(--status);
   min-height: 1.5em;
 }
 
@@ -58,7 +85,7 @@ h1 {
 }
 
 .cell {
-  background: #2e2e42;
+  background: var(--panel);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -72,11 +99,11 @@ h1 {
 }
 
 .cell:hover {
-  background: #3e3e58;
+  background: var(--panel-hover);
 }
 
 .cell.x {
-  color: #6ab0ff;
+  color: var(--accent);
 }
 
 .cell.o {
@@ -84,7 +111,7 @@ h1 {
 }
 
 .cell.win {
-  background: #4a7a4a;
+  background: var(--win);
 }
 
 @keyframes pop {
@@ -103,17 +130,19 @@ h1 {
   gap: 24px;
   font-size: 1.1rem;
   padding: 8px 20px;
-  background: #2e2e42;
+  background: var(--panel);
   border-radius: 8px;
 }
 
 .score b {
-  color: #6ab0ff;
+  color: var(--accent);
 }
 
 .buttons {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 button {
@@ -121,24 +150,24 @@ button {
   font-size: 1rem;
   border: none;
   border-radius: 8px;
-  background: #6ab0ff;
-  color: #1e1e2e;
+  background: var(--accent);
+  color: var(--btn-text);
   font-weight: bold;
   cursor: pointer;
   transition: background 0.15s;
 }
 
 button:hover {
-  background: #8cc4ff;
+  background: var(--accent-hover);
 }
 
 button.secondary {
-  background: #3e3e58;
-  color: #eee;
+  background: var(--panel);
+  color: var(--text);
 }
 
 button.secondary:hover {
-  background: #4e4e6c;
+  background: var(--panel-active);
 }
 
 button.off {
