@@ -585,4 +585,38 @@ soundToggleBtn.addEventListener('click', () => {
 });
 
 themeToggleBtn.addEventListener('click', () => {
-  theme = theme === 'dark' ? 'light'
+  theme = theme === 'dark' ? 'light' : 'dark';
+  applyTheme();
+  saveState();
+});
+
+boardEl.addEventListener('click', handleClick);
+restartBtn.addEventListener('click', restart);
+
+resetScoreBtn.addEventListener('click', () => {
+  score = { x: 0, o: 0, draw: 0 };
+  seriesScore = { x: 0, o: 0 };
+  seriesOver = false;
+  saveState();
+  renderScore();
+  renderSeries();
+});
+
+clearHistoryBtn.addEventListener('click', () => {
+  history = [];
+  saveState();
+  renderHistory();
+});
+
+// ---------- Инициализация ----------
+
+loadState();
+nameXInput.value = names.x;
+nameOInput.value = names.o;
+renderScore();
+renderSeries();
+renderHistory();
+updateSoundButton();
+applyTheme();
+updateVisibility();
+updateStatus();
