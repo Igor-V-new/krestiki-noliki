@@ -3,11 +3,14 @@ const cells = document.querySelectorAll('.cell');
 const statusEl = document.getElementById('status');
 const restartBtn = document.getElementById('restart');
 const modeRadios = document.querySelectorAll('input[name="mode"]');
+const difficultyRadios = document.querySelectorAll('input[name="difficulty"]');
+const difficultySelect = document.getElementById('difficulty-select');
 
 let currentPlayer = 'X';
 let state = Array(9).fill('');
 let gameOver = false;
-let mode = 'pvp'; // 'pvp' | 'pve'
+let mode = 'pvp';        // 'pvp' | 'pve'
+let difficulty = 'hard'; // 'easy' | 'medium' | 'hard'
 
 const HUMAN = 'X';
 const BOT = 'O';
@@ -79,13 +82,33 @@ function highlightWin(player) {
   });
 }
 
+// ---------- Бот ----------
+
 function botMove() {
   if (gameOver) return;
-  const best = bestMove(state, BOT);
-  if (best !== -1) makeMove(best);
+  let move;
+
+  if (difficulty === 'easy') {
+    move = randomMove(state);
+  } else if (difficulty === 'medium') {
+    // 50% — оптимальный ход, 50% — случайный
+    move = Math.random() < 0.5 ? bestMove(state, BOT) : randomMove(state);
+  } else {
+    move = bestMove(state, BOT);
+  }
+
+  if (move !== -1) makeMove(move);
 }
 
-// Minimax: бот непобедим
+function randomMove(board) {
+  const empty = [];
+  for (let i = 0; i < 9; i++) {
+    if (board[i] === '') empty.push(i);
+  }
+  if (empty.length === 0) return -1;
+  return empty[Math.floor(Math.random() * empty.length)];
+}
+
 function bestMove(board, player) {
   let bestScore = -Infinity;
   let move = -1;
@@ -137,11 +160,12 @@ function checkWinOnBoard(board, player) {
   );
 }
 
+// ---------- Рестарт и режимы ----------
+
 function restart() {
   state = Array(9).fill('');
   currentPlayer = 'X';
   gameOver = false;
-  statusEl.textContent = 'Ход: X';
   cells.forEach(c => {
     c.textContent = '';
     c.classList.remove('x', 'o', 'win');
@@ -153,12 +177,30 @@ function restart() {
   }
 }
 
+function updateDifficultyVisibility() {
+  if (mode === 'pve') {
+    difficultySelect.classList.remove('hidden');
+  } else {
+    difficultySelect.classList.add('hidden');
+  }
+}
+
 modeRadios.forEach(radio => {
   radio.addEventListener('change', () => {
     mode = radio.value;
+    updateDifficultyVisibility();
+    restart();
+  });
+});
+
+difficultyRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    difficulty = radio.value;
     restart();
   });
 });
 
 boardEl.addEventListener('click', handleClick);
 restartBtn.addEventListener('click', restart);
+
+updateDifficultyVisibility();
