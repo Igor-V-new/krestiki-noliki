@@ -8,6 +8,18 @@
 </head>
 <body>
   <h1>Крестики-нолики</h1>
+
+  <div class="mode-select">
+    <label>
+      <input type="radio" name="mode" value="pvp" checked>
+      Два игрока
+    </label>
+    <label>
+      <input type="radio" name="mode" value="pve">
+      Против бота
+    </label>
+  </div>
+
   <p id="status">Ход: X</p>
 
   <div class="board" id="board">
