@@ -4,6 +4,7 @@ const statusEl = document.getElementById('status');
 const restartBtn = document.getElementById('restart');
 const resetScoreBtn = document.getElementById('reset-score');
 const soundToggleBtn = document.getElementById('sound-toggle');
+const themeToggleBtn = document.getElementById('theme-toggle');
 const modeRadios = document.querySelectorAll('input[name="mode"]');
 const difficultyRadios = document.querySelectorAll('input[name="difficulty"]');
 const firstRadios = document.querySelectorAll('input[name="first"]');
@@ -31,8 +32,9 @@ let firstPlayer = 'human';
 
 let score = { x: 0, o: 0, draw: 0 };
 let soundOn = true;
+let theme = 'dark'; // 'dark' | 'light'
 
-// ---------- Звуки (Web Audio API) ----------
+// ---------- Звуки ----------
 
 let audioCtx = null;
 
@@ -90,9 +92,18 @@ function updateSoundButton() {
   soundToggleBtn.classList.toggle('off', !soundOn);
 }
 
+// ---------- Тема ----------
+
+function applyTheme() {
+  document.body.classList.toggle('light', theme === 'light');
+  themeToggleBtn.textContent = theme === 'dark'
+    ? '🌙 Тема: тёмная'
+    : '☀️ Тема: светлая';
+}
+
 // ---------- localStorage ----------
 
-function loadScore() {
+function loadState() {
   try {
     const raw = localStorage.getItem('ttt-score');
     if (raw) {
@@ -107,15 +118,19 @@ function loadScore() {
     }
     const sRaw = localStorage.getItem('ttt-sound');
     if (sRaw === 'off') soundOn = false;
+
+    const tRaw = localStorage.getItem('ttt-theme');
+    if (tRaw === 'light' || tRaw === 'dark') theme = tRaw;
   } catch (e) {
     console.warn('Не удалось загрузить данные:', e);
   }
 }
 
-function saveScore() {
+function saveState() {
   try {
     localStorage.setItem('ttt-score', JSON.stringify(score));
     localStorage.setItem('ttt-sound', soundOn ? 'on' : 'off');
+    localStorage.setItem('ttt-theme', theme);
   } catch (e) {
     console.warn('Не удалось сохранить данные:', e);
   }
@@ -177,7 +192,7 @@ function addScore(winner) {
   if (winner === 'X') score.x++;
   else if (winner === 'O') score.o++;
   else score.draw++;
-  saveScore();
+  saveState();
   renderScore();
 }
 
@@ -342,8 +357,14 @@ firstRadios.forEach(radio => {
 soundToggleBtn.addEventListener('click', () => {
   soundOn = !soundOn;
   updateSoundButton();
-  saveScore();
+  saveState();
   if (soundOn) playMove();
+});
+
+themeToggleBtn.addEventListener('click', () => {
+  theme = theme === 'dark' ? 'light' : 'dark';
+  applyTheme();
+  saveState();
 });
 
 boardEl.addEventListener('click', handleClick);
@@ -351,14 +372,15 @@ restartBtn.addEventListener('click', restart);
 
 resetScoreBtn.addEventListener('click', () => {
   score = { x: 0, o: 0, draw: 0 };
-  saveScore();
+  saveState();
   renderScore();
 });
 
 // ---------- Инициализация ----------
 
-loadScore();
+loadState();
 renderScore();
 updateSoundButton();
+applyTheme();
 updateVisibility();
 updateStatus();
