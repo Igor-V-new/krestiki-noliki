@@ -140,3 +140,7 @@ button.secondary {
 button.secondary:hover {
   background: #4e4e6c;
 }
+
+button.off {
+  opacity: 0.6;
+}
