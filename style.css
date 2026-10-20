@@ -13,7 +13,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  gap: 16px;
+  gap: 14px;
   padding: 24px;
 }
 
@@ -22,21 +22,25 @@ h1 {
 }
 
 .mode-select,
-.difficulty-select {
+.difficulty-select,
+.first-select {
   display: flex;
   gap: 20px;
   font-size: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .mode-select label,
-.difficulty-select label {
+.difficulty-select label,
+.first-select label {
   display: flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
 }
 
-.difficulty-select.hidden {
+.hidden {
   display: none;
 }
 
@@ -64,6 +68,7 @@ h1 {
   cursor: pointer;
   user-select: none;
   transition: background 0.15s;
+  animation: pop 0.2s ease-out;
 }
 
 .cell:hover {
@@ -82,6 +87,35 @@ h1 {
   background: #4a7a4a;
 }
 
+@keyframes pop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.score {
+  display: flex;
+  gap: 24px;
+  font-size: 1.1rem;
+  padding: 8px 20px;
+  background: #2e2e42;
+  border-radius: 8px;
+}
+
+.score b {
+  color: #6ab0ff;
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+}
+
 button {
   padding: 10px 24px;
   font-size: 1rem;
@@ -91,8 +125,18 @@ button {
   color: #1e1e2e;
   font-weight: bold;
   cursor: pointer;
+  transition: background 0.15s;
 }
 
 button:hover {
   background: #8cc4ff;
+}
+
+button.secondary {
+  background: #3e3e58;
+  color: #eee;
+}
+
+button.secondary:hover {
+  background: #4e4e6c;
 }
