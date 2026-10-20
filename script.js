@@ -2,15 +2,15 @@ const boardEl = document.getElementById('board');
 const cells = document.querySelectorAll('.cell');
 const statusEl = document.getElementById('status');
 const restartBtn = document.getElementById('restart');
+const resetScoreBtn = document.getElementById('reset-score');
 const modeRadios = document.querySelectorAll('input[name="mode"]');
 const difficultyRadios = document.querySelectorAll('input[name="difficulty"]');
+const firstRadios = document.querySelectorAll('input[name="first"]');
 const difficultySelect = document.getElementById('difficulty-select');
-
-let currentPlayer = 'X';
-let state = Array(9).fill('');
-let gameOver = false;
-let mode = 'pvp';        // 'pvp' | 'pve'
-let difficulty = 'hard'; // 'easy' | 'medium' | 'hard'
+const firstSelect = document.getElementById('first-select');
+const scoreXEl = document.getElementById('score-x');
+const scoreOEl = document.getElementById('score-o');
+const scoreDrawEl = document.getElementById('score-draw');
 
 const HUMAN = 'X';
 const BOT = 'O';
@@ -21,8 +21,54 @@ const winLines = [
   [0, 4, 8], [2, 4, 6]
 ];
 
+let currentPlayer = 'X';
+let state = Array(9).fill('');
+let gameOver = false;
+let mode = 'pvp';        // 'pvp' | 'pve'
+let difficulty = 'hard'; // 'easy' | 'medium' | 'hard'
+let firstPlayer = 'human'; // 'human' | 'bot' (только для PvE)
+
+let score = { x: 0, o: 0, draw: 0 };
+
+// ---------- localStorage ----------
+
+function loadScore() {
+  try {
+    const raw = localStorage.getItem('ttt-score');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (
+        typeof parsed.x === 'number' &&
+        typeof parsed.o === 'number' &&
+        typeof parsed.draw === 'number'
+      ) {
+        score = parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('Не удалось загрузить счёт:', e);
+  }
+}
+
+function saveScore() {
+  try {
+    localStorage.setItem('ttt-score', JSON.stringify(score));
+  } catch (e) {
+    console.warn('Не удалось сохранить счёт:', e);
+  }
+}
+
+function renderScore() {
+  scoreXEl.textContent = score.x;
+  scoreOEl.textContent = score.o;
+  scoreDrawEl.textContent = score.draw;
+}
+
+// ---------- Игровой процесс ----------
+
 function handleClick(e) {
   const cell = e.target;
+  if (!cell.classList.contains('cell')) return;
   const index = Number(cell.dataset.index);
 
   if (gameOver || state[index] !== '') return;
@@ -45,17 +91,27 @@ function makeMove(index) {
     statusEl.textContent = `Победил ${currentPlayer}! 🎉`;
     gameOver = true;
     highlightWin(currentPlayer);
+    addScore(currentPlayer);
     return;
   }
 
   if (state.every(v => v !== '')) {
     statusEl.textContent = 'Ничья 🤝';
     gameOver = true;
+    addScore('draw');
     return;
   }
 
   currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
   updateStatus();
+}
+
+function addScore(winner) {
+  if (winner === 'X') score.x++;
+  else if (winner === 'O') score.o++;
+  else score.draw++;
+  saveScore();
+  renderScore();
 }
 
 function updateStatus() {
@@ -91,7 +147,6 @@ function botMove() {
   if (difficulty === 'easy') {
     move = randomMove(state);
   } else if (difficulty === 'medium') {
-    // 50% — оптимальный ход, 50% — случайный
     move = Math.random() < 0.5 ? bestMove(state, BOT) : randomMove(state);
   } else {
     move = bestMove(state, BOT);
@@ -160,16 +215,26 @@ function checkWinOnBoard(board, player) {
   );
 }
 
-// ---------- Рестарт и режимы ----------
+// ---------- Рестарт и настройки ----------
 
 function restart() {
   state = Array(9).fill('');
-  currentPlayer = 'X';
   gameOver = false;
   cells.forEach(c => {
     c.textContent = '';
     c.classList.remove('x', 'o', 'win');
   });
+
+  if (mode === 'pve') {
+    if (firstPlayer === 'bot') {
+      currentPlayer = BOT;
+    } else {
+      currentPlayer = HUMAN;
+    }
+  } else {
+    currentPlayer = 'X';
+  }
+
   updateStatus();
 
   if (mode === 'pve' && currentPlayer === BOT) {
@@ -177,18 +242,22 @@ function restart() {
   }
 }
 
-function updateDifficultyVisibility() {
+function updateVisibility() {
   if (mode === 'pve') {
     difficultySelect.classList.remove('hidden');
+    firstSelect.classList.remove('hidden');
   } else {
     difficultySelect.classList.add('hidden');
+    firstSelect.classList.add('hidden');
   }
 }
+
+// ---------- Слушатели ----------
 
 modeRadios.forEach(radio => {
   radio.addEventListener('change', () => {
     mode = radio.value;
-    updateDifficultyVisibility();
+    updateVisibility();
     restart();
   });
 });
@@ -200,7 +269,25 @@ difficultyRadios.forEach(radio => {
   });
 });
 
+firstRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    firstPlayer = radio.value;
+    restart();
+  });
+});
+
 boardEl.addEventListener('click', handleClick);
 restartBtn.addEventListener('click', restart);
 
-updateDifficultyVisibility();
+resetScoreBtn.addEventListener('click', () => {
+  score = { x: 0, o: 0, draw: 0 };
+  saveScore();
+  renderScore();
+});
+
+// ---------- Инициализация ----------
+
+loadScore();
+renderScore();
+updateVisibility();
+updateStatus();
