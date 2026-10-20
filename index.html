@@ -22,6 +22,17 @@
       </label>
     </div>
 
+    <div class="names">
+      <label class="name-field">
+        <span>Игрок X:</span>
+        <input type="text" id="name-x" maxlength="16" placeholder="Игрок X">
+      </label>
+      <label class="name-field" id="name-o-field">
+        <span>Игрок O:</span>
+        <input type="text" id="name-o" maxlength="16" placeholder="Игрок O">
+      </label>
+    </div>
+
     <div class="difficulty-select hidden" id="difficulty-select">
       <label>
         <input type="radio" name="difficulty" value="easy">
@@ -78,8 +89,8 @@
     </div>
 
     <div class="score">
-      <span>X: <b id="score-x">0</b></span>
-      <span>O: <b id="score-o">0</b></span>
+      <span><b id="score-x-name">Игрок X</b>: <b id="score-x">0</b></span>
+      <span><b id="score-o-name">Игрок O</b>: <b id="score-o">0</b></span>
       <span>Ничьи: <b id="score-draw">0</b></span>
     </div>
 
@@ -92,6 +103,16 @@
       <button id="sound-toggle" class="secondary">🔊 Звук: вкл</button>
       <button id="theme-toggle" class="secondary">🌙 Тема: тёмная</button>
     </div>
+
+    <section class="history-section">
+      <div class="history-header">
+        <h2>История партий</h2>
+        <button id="clear-history" class="secondary small">Очистить</button>
+      </div>
+      <ul id="history-list" class="history-list">
+        <li class="history-empty">Пока нет сыгранных партий</li>
+      </ul>
+    </section>
   </main>
 
   <script src="script.js"></script>
