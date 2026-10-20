@@ -67,7 +67,8 @@ h1 {
 
 .mode-select,
 .difficulty-select,
-.first-select {
+.first-select,
+.series-select {
   display: flex;
   gap: clamp(10px, 3vw, 20px);
   font-size: clamp(0.9rem, 3.2vw, 1rem);
@@ -77,7 +78,8 @@ h1 {
 
 .mode-select label,
 .difficulty-select label,
-.first-select label {
+.first-select label,
+.series-select label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -87,6 +89,18 @@ h1 {
 
 .hidden {
   display: none;
+}
+
+.series-score {
+  font-size: clamp(1rem, 3.6vw, 1.15rem);
+  padding: 8px 18px;
+  background: var(--panel);
+  border-radius: 8px;
+}
+
+.series-score b {
+  color: var(--accent);
+  font-size: 1.15em;
 }
 
 #status {
@@ -130,7 +144,6 @@ h1 {
   background: var(--win);
 }
 
-/* hover — только для устройств с мышью */
 @media (hover: hover) {
   .cell:hover {
     background: var(--panel-hover);
@@ -145,7 +158,6 @@ h1 {
   }
 }
 
-/* нажатие на тач-устройствах */
 .cell:active {
   background: var(--panel-hover);
 }
@@ -196,7 +208,7 @@ button {
   transition: background 0.15s;
   flex: 1 1 auto;
   min-width: 140px;
-  min-height: 44px; /* удобный палец */
+  min-height: 44px;
 }
 
 button.secondary {
@@ -208,7 +220,6 @@ button.off {
   opacity: 0.6;
 }
 
-/* Очень узкие экраны (меньше 360px) */
 @media (max-width: 360px) {
   :root {
     --cell-size: 26vw;
